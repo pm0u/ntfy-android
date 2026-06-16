@@ -5,11 +5,13 @@
 
     <!-- Main app constants -->
     <string name="app_name" translatable="false">ntfy</string>
-    <!-- Self-hosted: this is the "main" server the app treats as Firebase/FCM-backed.
-         A subscription only uses FCM (no foreground service) when its baseUrl equals
-         this value (see AddFragment.instant logic); everything else falls back to the
-         foreground WebSocket. Paired with our own google-services.json (com.pmou.ntfy). -->
-    <string name="app_base_url" translatable="false">https://manager.tailc0b36c.ts.net</string>
+    <!-- The "main" server the app treats as Firebase/FCM-backed: a subscription only
+         uses FCM (no foreground service) when its baseUrl equals this value (see
+         AddFragment.instant logic); everything else falls back to the foreground
+         WebSocket. Left as the upstream default here so this public repo carries no
+         personal infra; the build-play workflow rewrites it from the NTFY_BASE_URL
+         secret (paired with our own google-services.json) before building. -->
+    <string name="app_base_url" translatable="false">https://ntfy.sh</string>
 
     <!-- Main activity -->
     <string name="main_menu_report_bug_url" translatable="false">https://github.com/binwiederhier/ntfy/issues</string>

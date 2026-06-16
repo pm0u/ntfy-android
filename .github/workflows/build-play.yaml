@@ -12,6 +12,8 @@ name: build-play
 #   KEYSTORE_PASSWORD     keystore password
 #   KEY_ALIAS             key alias
 #   KEY_PASSWORD          key password
+#   NTFY_BASE_URL         our self-hosted server URL (kept out of the public repo;
+#                         rewritten into app_base_url at build time)
 #
 # The APK is uploaded as a build artifact; download it from the run page and
 # `adb install` (or open on the phone). Tag-triggered runs also attach it to a
@@ -46,6 +48,16 @@ jobs:
           # Fail loudly here (with a readable error) rather than deep in the
           # gradle google-services task if the secret didn't decode to valid JSON.
           python3 -m json.tool app/google-services.json > /dev/null
+
+      - name: Inject app_base_url (FCM "main" server, kept out of the repo)
+        env:
+          NTFY_BASE_URL: ${{ secrets.NTFY_BASE_URL }}
+        run: |
+          test -n "$NTFY_BASE_URL"   # fail early if the secret is unset
+          file=app/src/main/res/values/values.xml
+          # | delimiter so the URL's slashes don't need escaping.
+          sed -i "s|\(<string name=\"app_base_url\" translatable=\"false\">\)[^<]*\(</string>\)|\1${NTFY_BASE_URL}\2|" "$file"
+          grep -q "$NTFY_BASE_URL" "$file"   # confirm the rewrite landed
 
       - name: Decode signing keystore
         env:
