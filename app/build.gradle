@@ -13,7 +13,9 @@ android {
     compileSdkVersion 36
 
     defaultConfig {
-        applicationId "io.heckel.ntfy"
+        // Self-hosted fork: install identity matches our own Firebase project
+        // registration (com.pmou.ntfy). namespace stays io.heckel.ntfy (code/R).
+        applicationId "com.pmou.ntfy"
         minSdkVersion 26
         targetSdkVersion 36
 
@@ -32,14 +34,28 @@ android {
         }
     }
 
+    // Release signing for our own self-hosted build. Reads the keystore + creds
+    // from env vars so nothing secret lives in the repo: set locally for a manual
+    // build, or injected by the build-play GitHub Action from repo secrets. When
+    // the env isn't present (e.g. a local debug build) the config stays empty and
+    // gradle just skips signing it.
+    signingConfigs {
+        release {
+            if (System.getenv("KEYSTORE_FILE")) {
+                storeFile file(System.getenv("KEYSTORE_FILE"))
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
             shrinkResources false
             debuggable false
-            // DEV/TEST ONLY: Uncomment this to test the release build with a debug key.
-            //                This is required to test against the production Firebase config.
-            // signingConfig signingConfigs.debug
+            signingConfig System.getenv("KEYSTORE_FILE") ? signingConfigs.release : null
         }
         debug {
             minifyEnabled false

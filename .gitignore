@@ -4,6 +4,8 @@ google-services.json
 # Signing keystore
 .keystores/
 .signing/
+*.jks
+*.keystore
 
 # Playground
 playground/
