@@ -7,8 +7,9 @@ name: build-play
 # neither ever lands in git.
 #
 # Required repository secrets (Settings -> Secrets and variables -> Actions):
-#   GOOGLE_SERVICES_JSON  base64 of app/google-services.json   (com.pmou.ntfy)
-#   KEYSTORE_BASE64       base64 of the release keystore (.jks)
+#   GOOGLE_SERVICES_JSON  raw contents of app/google-services.json (com.pmou.ntfy)
+#                         set with:  gh secret set GOOGLE_SERVICES_JSON < google-services.json
+#   KEYSTORE_BASE64       base64 of the release keystore (.jks) — binary, so base64
 #   KEYSTORE_PASSWORD     keystore password
 #   KEY_ALIAS             key alias
 #   KEY_PASSWORD          key password
@@ -38,10 +39,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Decode google-services.json
+      - name: Write google-services.json
         env:
           GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo "$GOOGLE_SERVICES_JSON" | base64 -d > app/google-services.json
+        run: |
+          printf '%s' "$GOOGLE_SERVICES_JSON" > app/google-services.json
+          # Fail loudly here (with a readable error) rather than deep in the
+          # gradle google-services task if the secret isn't valid JSON.
+          python3 -m json.tool app/google-services.json > /dev/null
 
       - name: Decode signing keystore
         env:
